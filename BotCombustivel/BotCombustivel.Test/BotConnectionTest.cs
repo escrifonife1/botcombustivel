@@ -11,7 +11,7 @@ namespace BotCombustivel.Test
         public async Task TestConnection()
         {
             var botConnection = new BotConnection();
-            await botConnection.Connect();
+            await botConnection.Connect(new MessageReceiver());
         }
     }
 }

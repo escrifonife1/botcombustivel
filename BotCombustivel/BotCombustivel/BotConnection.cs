@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Lime.Protocol;
 using Takenet.MessagingHub.Client;
+using Takenet.MessagingHub.Client.Receivers;
 
 namespace BotCombustivel
 {
@@ -43,5 +45,31 @@ namespace BotCombustivel
             }
 
         }
+
+        public async Task Connect(MessageReceiver messageReceiver)
+        {
+            const string login = "BOTCOMBUSTIVEL"; //Identificador da aplicação
+            const string accessKey = "OVJ1MGRs"; //Chave de acesso da aplicação
+            var client = new MessagingHubClientBuilder()
+                .UsingAccessKey(login, accessKey)
+                .AddMessageReceiver(messageReceiver)
+                .Build();
+
+            var messageText = "It is working bitch!";
+
+            await client.StartAsync();
+
+            await client.SendMessageAsync(messageText, to: login);
+        }
     }
+
+    public class MessageReceiver : MessageReceiverBase
+    {
+        public override async Task ReceiveAsync(Message message)
+        {
+            // Write the received message to the console
+            Console.WriteLine(message.Content.ToString());
+        }
+    }
+
 }
