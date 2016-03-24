@@ -1,7 +1,7 @@
 ﻿{
   /* Retrieve your application's login and access key at http://messaginghub.io */
-  "login": "BOTCOMBUSTIVEL",
-  "accessKey": "OVJ1MGRs",
+  "login": "BOTTRAFFICCAM",
+  "accessKey": "UFAwZWxW",
   "messageReceivers": [
     {
       "type": "PlainTextMessageReceiver",

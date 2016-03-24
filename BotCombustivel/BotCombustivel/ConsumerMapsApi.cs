@@ -17,19 +17,61 @@ namespace BotCombustivel
         private string PLACES_API_BASE = "https://maps.googleapis.com/maps/api/geocode/json";
         private string OUT_JSON = "json";
         private string API_KEY = "AIzaSyDWp1buYj0PrAIjvPERqYykNHxatBCcreo";
+        private HttpClient _httpClient;
         public WebClient Client { get; private set; }
 
         public ConsumerMapsApi()
         {
             Client = new WebClient();
             Client.Headers.Add("Content-Type", "application/json");
-            Client.Headers.Add("OSLC-Core-Version", "2.0");
+            Client.Encoding = System.Text.Encoding.UTF8;
+
+            _httpClient = new HttpClient();
+            _httpClient.BaseAddress = new Uri(PLACES_API_BASE);
         }
 
-        public void GetAddress(string address)
+        public GoobleBest.RootObject GetBestAddress(string formatedAdress)
         {
-           var resultJson = Client.DownloadString($"{PLACES_API_BASE}?key={API_KEY}&address={address}");
+            var origin = formatedAdress;
+            var destinations = formatedAdress;
 
+            var resultJson =
+                Client.DownloadString(
+                    $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destinations}&key=AIzaSyAo1mmOJRwCVIbOZnAOtuck91sl6TFoUtE");
+            try
+            {
+                var rootObject = JsonConvert.DeserializeObject<GoobleBest.RootObject>(resultJson);
+
+                return rootObject;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<Google.RootObject> GetAddress(string address)
+        {
+            var resultJson = Client.DownloadString($"{PLACES_API_BASE}?key={API_KEY}&address={address}");
+            string responseContent = "";
+            try
+            {
+                var response = await _httpClient.GetAsync($"?key={API_KEY}&address={address}");
+
+                responseContent = await response.Content.ReadAsStringAsync() ?? string.Empty;
+                if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.BadRequest)
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+
+                var rootObject = JsonConvert.DeserializeObject<Google.RootObject>(resultJson);
+
+                return rootObject;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private List<string> autocomplete(string input)
@@ -95,6 +137,118 @@ namespace BotCombustivel
             }
 
             return resultList;
+        }
+    }
+
+    public class GoobleBest
+    {
+        public class Distance
+        {
+            public string text { get; set; }
+            public int value { get; set; }
+        }
+
+        public class Duration
+        {
+            public string text { get; set; }
+            public int value { get; set; }
+        }
+
+        public class Element
+        {
+            public Distance distance { get; set; }
+            public Duration duration { get; set; }
+            public string status { get; set; }
+        }
+
+        public class Row
+        {
+            public IList<Element> elements { get; set; }
+        }
+
+        public class RootObject
+        {
+            public IList<string> destination_addresses { get; set; }
+            public IList<string> origin_addresses { get; set; }
+            public IList<Row> rows { get; set; }
+            public string status { get; set; }
+        }
+
+    }
+
+    public class Google
+    {
+        public class RootObject
+        {
+            public Result[] results { get; set; }
+            public string status { get; set; }
+        }
+
+        public class Result
+        {
+            public Address_Components[] address_components { get; set; }
+            public string formatted_address { get; set; }
+            public Geometry geometry { get; set; }
+            public string place_id { get; set; }
+            public string[] types { get; set; }
+            public bool partial_match { get; set; }
+        }
+
+        public class Geometry
+        {
+            public Bounds bounds { get; set; }
+            public Location location { get; set; }
+            public string location_type { get; set; }
+            public Viewport viewport { get; set; }
+        }
+
+        public class Bounds
+        {
+            public Northeast northeast { get; set; }
+            public Southwest southwest { get; set; }
+        }
+
+        public class Northeast
+        {
+            public float lat { get; set; }
+            public float lng { get; set; }
+        }
+
+        public class Southwest
+        {
+            public float lat { get; set; }
+            public float lng { get; set; }
+        }
+
+        public class Location
+        {
+            public float lat { get; set; }
+            public float lng { get; set; }
+        }
+
+        public class Viewport
+        {
+            public Northeast1 northeast { get; set; }
+            public Southwest1 southwest { get; set; }
+        }
+
+        public class Northeast1
+        {
+            public float lat { get; set; }
+            public float lng { get; set; }
+        }
+
+        public class Southwest1
+        {
+            public float lat { get; set; }
+            public float lng { get; set; }
+        }
+
+        public class Address_Components
+        {
+            public string long_name { get; set; }
+            public string short_name { get; set; }
+            public string[] types { get; set; }
         }
     }
 

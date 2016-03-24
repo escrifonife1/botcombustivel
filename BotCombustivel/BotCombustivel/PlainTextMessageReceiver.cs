@@ -12,6 +12,7 @@ namespace BotCombustivel
 {
     public enum LocalMessageStatus
     {
+        Start,
         AskedAdress,
         Question,
         Answer,
@@ -21,50 +22,48 @@ namespace BotCombustivel
     {
         private Dictionary<Node, LocalMessageStatus> _session;
         private ConsumerMapsApi _consumerMapsApi;
-        /*public override async Task ReceiveAsync(Message message)
+
+        public PlainTextMessageReceiver()
         {
-            var webClient = new WebClient();
-            webClient.Headers.Add("Content-Type", "application/json");
-            webClient.Headers.Add("OSLC-Core-Version", "2.0");
-            var buscaJson = webClient.DownloadString($"http://api.meuspostos.com.br/busca.json?chave=" + message.Content.ToString());
-            var busca = Newtonsoft.Json.JsonConvert.DeserializeObject<Buscar.RootObject>(buscaJson);
-            */
-        /*
-         //Regiões
-        var regioesStr = webClient.DownloadString($"http://api.meuspostos.com.br/regioes.json");
-        var regioes = Newtonsoft.Json.JsonConvert.DeserializeObject<Regioes.RootObject>(regioesStr);
-        */
-        /*await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
-
-        Console.WriteLine($"From: {message.From} \tContent: {message.Content}");
-
-        //await EnvelopeSender.SendMessageAsync("Pong!", message.From);
-        await EnvelopeSender.SendNotificationAsync(message.ToConsumedNotification());
-    }*/
+            _session = new Dictionary<Node, LocalMessageStatus>();
+            _consumerMapsApi=new ConsumerMapsApi();
+        }
 
         public override async Task ReceiveAsync(Message message)
         {
-            if (_session.ContainsKey(message.From))
-            {
-                if (_session[message.From] == LocalMessageStatus.AskedAdress)
-                {
-                    
-                }
-
-            }
-            else
+            if (!_session.ContainsKey(message.From))
             {
                 _session.Add(message.From, LocalMessageStatus.AskedAdress);
-                await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\nInforme um endereço", message.From);
             }
+            if (_session[message.From] == LocalMessageStatus.AskedAdress)
+                {
+                    var locations = await _consumerMapsApi.GetAddress(message.Content.ToString());
+                    if (locations != null && locations.results.Any())
+                    {
+                        _session.Remove(message.From);
+                        var addresses = string.Empty;
+                        foreach (var address in locations.results)
+                        {
+                            addresses += $"\n{address.formatted_address}";
+                        }
+
+                        await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\n{locations.results.Count()} endereços encontrados. {addresses}", message.From);
+
+                        
+                    }
+                    else
+                    {
+                        await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\nEndereço não encontrado\n\nInforme seu endereço atual", message.From);
+                    }
+                }
+
             
-            await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
-
-            var messageWithImage = new Takenet.Omni.Model.TextWithAttachments();
-            messageWithImage.Text =
-                "http://cinepop.com.br/wp-content/uploads/2016/01/batmanvssuperman_final-1-e1453672126916-750x380.jpg";
-
-            await EnvelopeSender.SendMessageAsync(messageWithImage, message.From);
+            //else
+            //{
+            //    _session.Add(message.From, LocalMessageStatus.AskedAdress);
+            //    await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\nInforme seu endereço atual", message.From);
+            //}
+         
 
             Console.WriteLine($"From: {message.From} \tContent: {message.Content}");
 
