@@ -6,11 +6,23 @@ using System.Threading.Tasks;
 
 namespace BotCombustivel
 {
-    class test
+    public class AllCams
     {
-        public test() { }
+        public AllCams() { }
 
-        public void InitializeCameras()
+        public string GetQuerystringConcatenated()
+        {
+            var all = GetAll();
+            var query = string.Empty;
+            foreach (var camera in all)
+            {
+                query += camera._queryString + "|";
+            }
+
+            return query;
+        }
+
+        public List<Camera> GetAll()
         {
             var camList = new List<Camera>();
 
@@ -175,6 +187,8 @@ namespace BotCombustivel
                name: "Avenida+Bias+Fortes+esquina+com+Avenida+Alvares+Cabral",
                address: ""
             ));
+
+            return camList;
         }
 
 

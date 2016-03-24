@@ -73,11 +73,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotConnection.cs" />
+    <Compile Include="Camera.cs" />
     <Compile Include="Model.cs" />
     <Compile Include="ConsumerMapsApi.cs" />
     <Compile Include="PlainTextMessageReceiver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="AllCams.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="application.json">

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Takenet.MessagingHub.Client;
 using Takenet.MessagingHub.Client.Receivers;
+using Takenet.Omni.Model;
 
 namespace BotCombustivel
 {
@@ -48,9 +49,27 @@ namespace BotCombustivel
                         }
 
                         await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\n{locations.results.Count()} endereços encontrados. {addresses}", message.From);
+                        var bestAddress = _consumerMapsApi.GetBestAddress(locations.results.FirstOrDefault().formatted_address);
 
-                        
+                        foreach (var cam in bestAddress)
+                        {
+                            var doc = new TextWithAttachments
+                            {
+                                Text = cam._name.Replace("+"," "),
+                                Attachments = new[]
+                                {
+                                    new Attachment
+                                    {
+                                        MediaType = AttachmentMediaType.Image,
+                                        MimeType = new MediaType("image", "gif"),
+                                        RemoteUri = cam._urlCamera,
+                                        //ThumbnailUri = cam._urlCamera,
+                                    }
+                                }
+                            };
+                        await EnvelopeSender.SendMessageAsync(doc, message.From);
                     }
+                }
                     else
                     {
                         await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\nEndereço não encontrado\n\nInforme seu endereço atual", message.From);

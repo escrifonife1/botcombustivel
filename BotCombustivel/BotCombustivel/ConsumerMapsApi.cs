@@ -30,19 +30,22 @@ namespace BotCombustivel
             _httpClient.BaseAddress = new Uri(PLACES_API_BASE);
         }
 
-        public GoobleBest.RootObject GetBestAddress(string formatedAdress)
+        public List<Camera> GetBestAddress(string formatedAdress)
         {
             var origin = formatedAdress;
-            var destinations = formatedAdress;
+            var destinations = new AllCams();
 
             var resultJson =
                 Client.DownloadString(
-                    $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destinations}&key=AIzaSyAo1mmOJRwCVIbOZnAOtuck91sl6TFoUtE");
+                    $"https://maps.googleapis.com/maps/api/distancematrix/json?origins={origin}&destinations={destinations.GetQuerystringConcatenated()}&key=AIzaSyAo1mmOJRwCVIbOZnAOtuck91sl6TFoUtE");
             try
             {
                 var rootObject = JsonConvert.DeserializeObject<GoobleBest.RootObject>(resultJson);
-
-                return rootObject;
+                var distances = rootObject.rows.FirstOrDefault().elements.Min(d => d.distance.value);
+                //var elements = rootObject.rows.FirstOrDefault().elements.Where(d => d.distance.value == distances);
+                var elements = rootObject.rows.FirstOrDefault().elements.OrderBy(d => d.distance.value).ToList();
+                
+                return destinations.GetAll().Take(3).ToList();
             }
             catch (Exception ex)
             {
