@@ -6,27 +6,47 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.IO;
+using System.Net;
 using Newtonsoft.Json.Linq;
 
 namespace BotCombustivel
 {
     class ConsumerMapsApi
     {
+        //private string PLACES_API_BASE = "https://maps.googleapis.com/maps/api/place/autocomplete";
+        private string PLACES_API_BASE = "https://maps.googleapis.com/maps/api/geocode/json";
+        private string OUT_JSON = "json";
+        private string API_KEY = "AIzaSyDWp1buYj0PrAIjvPERqYykNHxatBCcreo";
+        public WebClient Client { get; private set; }
+
+        public ConsumerMapsApi()
+        {
+            Client = new WebClient();
+            Client.Headers.Add("Content-Type", "application/json");
+            Client.Headers.Add("OSLC-Core-Version", "2.0");
+        }
+
+        public void GetAddress(string address)
+        {
+           var resultJson = Client.DownloadString($"{PLACES_API_BASE}?key={API_KEY}&address={address}");
+
+        }
+
         private List<string> autocomplete(string input)
         {
-
             List<string> resultList = null;
 
             HttpClient conn = null;
             StringBuilder jsonResults = new StringBuilder();
             try
             {
-                StringBuilder sb = new StringBuilder(PLACES_API_BASE + TYPE_AUTOCOMPLETE + OUT_JSON);
-                sb.Append("?key=" + API_KEY);
-                sb.Append("&components=country:uk");
-                sb.Append("&input=" + URLEncoder.encode(input, "utf8"));
+                StringBuilder sb = new StringBuilder(PLACES_API_BASE);
+                sb.Append($"?key={API_KEY}");
+                sb.Append($"&address={input}");
+                //sb.Append("&components=country:uk");
+                //sb.Append("&input=" + URLEncoder.encode(input, "utf8"));
 
-                URL url = new URL(sb.ToString());
+                /*var url = new Uri(sb.ToString());
                 conn = url.OpenConnection() as HttpURLConnection;
                 InputStreamReader inputStream = new InputStreamReader(conn.InputStream);
 
@@ -36,7 +56,7 @@ namespace BotCombustivel
                 while ((read = inputStream.Read(buff)) != -1)
                 {
                     jsonResults.Append(buff, 0, read);
-                }
+                }*/
             }
             catch (HttpRequestException e)
             {

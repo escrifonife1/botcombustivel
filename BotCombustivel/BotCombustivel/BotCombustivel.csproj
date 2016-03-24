@@ -66,6 +66,10 @@
       <HintPath>..\packages\Takenet.MessagingHub.Client.0.2.131\lib\net461\Takenet.MessagingHub.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Takenet.Omni.Model, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Takenet.Omni.Model.1.0.1\lib\net461\Takenet.Omni.Model.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotConnection.cs" />

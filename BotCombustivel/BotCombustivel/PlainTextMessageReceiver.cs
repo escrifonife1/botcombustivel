@@ -10,8 +10,17 @@ using Takenet.MessagingHub.Client.Receivers;
 
 namespace BotCombustivel
 {
+    public enum LocalMessageStatus
+    {
+        AskedAdress,
+        Question,
+        Answer,
+        Wrong
+    }
     public class PlainTextMessageReceiver : MessageReceiverBase
     {
+        private Dictionary<Node, LocalMessageStatus> _session;
+        private ConsumerMapsApi _consumerMapsApi;
         /*public override async Task ReceiveAsync(Message message)
         {
             var webClient = new WebClient();
@@ -20,24 +29,42 @@ namespace BotCombustivel
             var buscaJson = webClient.DownloadString($"http://api.meuspostos.com.br/busca.json?chave=" + message.Content.ToString());
             var busca = Newtonsoft.Json.JsonConvert.DeserializeObject<Buscar.RootObject>(buscaJson);
             */
-            /*
-             //Regiões
-            var regioesStr = webClient.DownloadString($"http://api.meuspostos.com.br/regioes.json");
-            var regioes = Newtonsoft.Json.JsonConvert.DeserializeObject<Regioes.RootObject>(regioesStr);
-            */
-            /*await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
-            
-            Console.WriteLine($"From: {message.From} \tContent: {message.Content}");
-            
-            //await EnvelopeSender.SendMessageAsync("Pong!", message.From);
-            await EnvelopeSender.SendNotificationAsync(message.ToConsumedNotification());
-        }*/
+        /*
+         //Regiões
+        var regioesStr = webClient.DownloadString($"http://api.meuspostos.com.br/regioes.json");
+        var regioes = Newtonsoft.Json.JsonConvert.DeserializeObject<Regioes.RootObject>(regioesStr);
+        */
+        /*await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
+
+        Console.WriteLine($"From: {message.From} \tContent: {message.Content}");
+
+        //await EnvelopeSender.SendMessageAsync("Pong!", message.From);
+        await EnvelopeSender.SendNotificationAsync(message.ToConsumedNotification());
+    }*/
 
         public override async Task ReceiveAsync(Message message)
         {
-             var searchCity = new SearchCity();
+            if (_session.ContainsKey(message.From))
+            {
+                if (_session[message.From] == LocalMessageStatus.AskedAdress)
+                {
+                    
+                }
 
-             await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
+            }
+            else
+            {
+                _session.Add(message.From, LocalMessageStatus.AskedAdress);
+                await EnvelopeSender.SendMessageAsync($"{DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}\nInforme um endereço", message.From);
+            }
+            
+            await EnvelopeSender.SendMessageAsync($"Recebido {DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss")}", message.From);
+
+            var messageWithImage = new Takenet.Omni.Model.TextWithAttachments();
+            messageWithImage.Text =
+                "http://cinepop.com.br/wp-content/uploads/2016/01/batmanvssuperman_final-1-e1453672126916-750x380.jpg";
+
+            await EnvelopeSender.SendMessageAsync(messageWithImage, message.From);
 
             Console.WriteLine($"From: {message.From} \tContent: {message.Content}");
 
